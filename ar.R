@@ -7,6 +7,10 @@ load_nc <- function(filename){
   df <- expand.grid(ncvar_get(nc_data, "longitude"),
                       ncvar_get(nc_data, "latitude"),
                       ncvar_get(nc_data, "time"))
+  names(df) <- c("Lon","Lat","Time") 
+  df <- df %>% mutate(step = match(Time, uniq_times))
+  df <- df %>% mutate(Date = as.POSIXct(Time*3600, origin='1900-01-01 00:00'))
+  
   for(name in names(nc_data$var)){
     df[name] = as.vector(ncvar_get(nc_data, name))
   }
@@ -18,6 +22,8 @@ load_nc <- function(filename){
     df <- df %>%
       mutate(IVT = sqrt(viwve^2 + viwvn^2))
   }
+  
+  return(df)
 }
 nc_data <- nc_open("download_e5.nc")
 
